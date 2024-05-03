@@ -5,12 +5,16 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <AssemblyVersion>2405.3.0.0</AssemblyVersion>
-    <FileVersion>2405.3.0.0</FileVersion>
+    <AssemblyVersion>2405.3.2.0</AssemblyVersion>
+    <FileVersion>2405.3.2.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SampleProject.Domain\SampleProject.Domain.csproj" />
   </ItemGroup>
 
 </Project>

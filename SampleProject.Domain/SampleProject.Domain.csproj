@@ -4,12 +4,23 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyVersion>2405.3.0.0</AssemblyVersion>
-    <FileVersion>2405.3.0.0</FileVersion>
+    <AssemblyVersion>2405.3.2.0</AssemblyVersion>
+    <FileVersion>2405.3.2.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Applications\" />
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+    <PackageReference Include="MediatR" Version="12.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SampleProject.API.Model\SampleProject.API.Model.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Consts\" />
   </ItemGroup>
 
 </Project>

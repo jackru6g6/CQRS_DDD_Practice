@@ -8,7 +8,7 @@ namespace SampleProject.Domain.Domains.Aggregate.Order
 
         public List<OrderItemEntity> Items { get; private set; } = [];
 
-        public OrderAgg(string name, decimal amount)
+        public OrderAgg(decimal amount)
         {
             Order = new OrderEntity
             {

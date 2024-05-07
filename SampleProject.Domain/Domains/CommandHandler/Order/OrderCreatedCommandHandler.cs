@@ -16,7 +16,10 @@ namespace SampleProject.Domain.Domains.CommandHandler.Order
 
         public Task<Guid> Handle(OrderCreatedCommand request, CancellationToken cancellationToken)
         {
-            var orderAgg = new OrderAgg { };
+            var orderAgg = new OrderAgg(request.Amount);
+            _orderRepo.Add(orderAgg);
+
+            return Task.FromResult(orderAgg.Order.Id);
         }
     }
 }

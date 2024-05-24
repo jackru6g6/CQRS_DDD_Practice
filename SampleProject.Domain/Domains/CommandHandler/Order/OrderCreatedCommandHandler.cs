@@ -20,6 +20,6 @@ namespace SampleProject.Domain.Domains.CommandHandler.Order
             _orderRepo.Add(orderAgg);
 
             return Task.FromResult(orderAgg.Order.Id);
-        }
+        } 
     }
 }

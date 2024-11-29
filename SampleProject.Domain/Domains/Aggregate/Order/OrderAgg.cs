@@ -4,13 +4,13 @@ namespace SampleProject.Domain.Domains.Aggregate.Order
 {
     public class OrderAgg : AggregateRoot
     {
-        public OrderEntity Order { get; private set; }
+        public OrderEntity Entity { get; private set; }
 
         public List<OrderItemEntity> Items { get; private set; } = [];
 
         public OrderAgg(decimal amount)
         {
-            Order = new OrderEntity
+            Entity = new OrderEntity
             {
                 Id = Guid.NewGuid(),
                 Amount = amount,

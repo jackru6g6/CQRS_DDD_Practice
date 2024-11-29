@@ -1,7 +1,19 @@
-﻿namespace SampleProject.Domain.Repositories.Entity
+﻿using SampleProject.Domain.Interfaces.Repository;
+
+namespace SampleProject.Domain.Repositories.Entity
 {
-    public class OrderEntity
+    public class OrderEntity : IOptimisticLock
     {
+        public string Key => Id.ToString();
+
+        public string? Version => _version.Value;
+        private readonly Lazy<string?> _version;
+
+        public OrderEntity()
+        {
+            _version = new Lazy<string>(() => ModifyTime?.ToString());
+        }
+
         public Guid Id { get; set; }
 
         public string No { get; set; }

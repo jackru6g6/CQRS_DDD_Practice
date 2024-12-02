@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+ï»¿using Microsoft.AspNetCore.Mvc;
 using SampleProject.Domain.Interfaces.Application;
 
 namespace SampleProject.Controllers
@@ -24,7 +24,7 @@ namespace SampleProject.Controllers
         [HttpGet(Name = "GetWeatherForecast")]
         public async Task<IEnumerable<WeatherForecast>> Get()
         {
-            // ´ú¸Õ¥Î
+            // æ¸¬è©¦ç”¨
             var result = await _appService.Create(new API.Model.Order.Request.CreateRequest { });
 
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast

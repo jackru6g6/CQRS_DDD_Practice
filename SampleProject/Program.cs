@@ -1,4 +1,4 @@
-using Castle.DynamicProxy;
+ï»¿using Castle.DynamicProxy;
 using SampleProject.Domain.Applications;
 using SampleProject.Domain.Applications.Adapter;
 using SampleProject.Domain.Applications.Behavior;
@@ -16,27 +16,27 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-#region «È»s¤Æ³]©w
+#region å®¢è£½åŒ–è¨­å®š
 
-// MediatR °t¸m
+// MediatR é…ç½®
 //builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 builder.Services.AddMediatR(cfg =>
 {
-    // ¾A°t¾¹
+    // é©é…å™¨
     cfg.RegisterServicesFromAssemblyContaining(typeof(BaseApplication));
     //Assembly.Load(new AssemblyName("Apollo.MerchantCenter.Domain"));
     //cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
 
-    // ÅçÃÒ¾¹
+    // é©—è­‰å™¨
     cfg.AddOpenBehavior(typeof(ValidatorBehavior<,>));
 
-    // ±À°e«D¦P¨B(¾Ü¤@)
+    // æ¨é€éåŒæ­¥(æ“‡ä¸€)
     //cfg.NotificationPublisher = new TaskWhenAllPublisher();
 
-    // ±À°e¦P¨B(¾Ü¤@¡A¹w³])
+    // æ¨é€åŒæ­¥(æ“‡ä¸€ï¼Œé è¨­)
     //cfg.NotificationPublisher = new ForeachAwaitPublisher();
 
-    // «È¨î¤Æ
+    // å®¢åˆ¶åŒ–
     cfg.NotificationPublisher = new OptimisticLockExceptionRertyAdapterHandler();
 });
 
@@ -45,17 +45,17 @@ builder.Services.AddScoped<IOrderApplication, OrderApplication>();
 builder.Services.AddScoped<IOrderAggRepository, OrderAggV2Repository>();
 
 //builder.Services.IntersectBy(typeof(SelectInterceptor));
-// µù¥UÄdºI¾¹
+// è¨»å†Šæ””æˆªå™¨
 builder.Services.AddScoped<IInterceptor, SelectInterceptor>();
-//µù¥U¨Ò¥~³B²zInterceptor
+//è¨»å†Šä¾‹å¤–è™•ç†Interceptor
 //builder.Services.Regi(typeof(ExceptionHandleInterceptor));
 
 // Action Filter
 builder.Services.AddMvc(options =>
 {
-    //options.Filters.Add<SelectAttribute>(); // ¥ş°ìµù¥U
-    //options.Filters.Add(new SelectFilterAttribute()); // ¥ş°ìµù¥U
-    //options.Filters.Add(typeof(SelectFilterAttribute)); // ¥ş°ìµù¥U
+    //options.Filters.Add<SelectAttribute>(); // å…¨åŸŸè¨»å†Š
+    //options.Filters.Add(new SelectFilterAttribute()); // å…¨åŸŸè¨»å†Š
+    //options.Filters.Add(typeof(SelectFilterAttribute)); // å…¨åŸŸè¨»å†Š
 });
 
 #endregion

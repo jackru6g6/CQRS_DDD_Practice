@@ -1,7 +1,6 @@
-﻿using Autofac.Extras.DynamicProxy;
-using SampleProject.Domain.Domains.Aggregate.Order;
+﻿using SampleProject.Domain.Domains.Aggregate.Order;
 using SampleProject.Domain.Exceptions;
-using SampleProject.Domain.Filters.OptimisticLock;
+using SampleProject.Domain.Interceptors.OptimisticLock.Attribute;
 using SampleProject.Domain.Interfaces.Repository;
 
 namespace SampleProject.Domain.Repositories
@@ -9,7 +8,7 @@ namespace SampleProject.Domain.Repositories
     /// <summary>
     /// 要用 Singleton (因為範例的歡樂鎖存在 local memory，未來改用其他就可以不用 Singleton)
     /// </summary>
-    [Intercept(typeof(SelectInterceptor))]
+    //[Intercept(typeof(SelectInterceptor))]
     public class OrderAggV2Repository : IOrderAggRepository
     {
         /// <summary>
@@ -28,10 +27,7 @@ namespace SampleProject.Domain.Repositories
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        //[Select]
-        //[SelectFilter]
-        //[ServiceFilter(typeof(SelectFilterAttribute))]
-        //[TypeFilter(typeof(SelectFilterAttribute))]
+        [Select]
         public OrderAgg? Get(Guid id)
         {
             var domain = _memoryDb.FirstOrDefault(t => t.Entity.Id == id);
@@ -65,6 +61,9 @@ namespace SampleProject.Domain.Repositories
                     _optimisticLock.Add(@lock.Key, @lock.Version);
                 }
             }
+
+            // 測試用
+            domain = new OrderAgg(123.1m) { };
 
             return domain;
         }

@@ -15,8 +15,9 @@ namespace SampleProject.Domain.Domains.EventHandler.SmsHandler
 
         public Task Handle(OrderCreatedEvent notification, CancellationToken cancellationToken)
         {
-            _repo.Get(Guid.NewGuid());
-            _repo.Update(new Aggregate.Order.OrderAgg(123.1m) { });
+            var order = _repo.Get(Guid.NewGuid());
+
+            _repo.Update(order);
 
             return Task.CompletedTask;
         }

@@ -2,15 +2,15 @@
 
 namespace SampleProject.Domain.Domains.Aggregate.Order
 {
-    public class OrderAgg : AggregateRoot
+    public class OrderAgg(OrderEntity? entity) : AggregateRoot
     {
-        public OrderEntity Entity { get; private set; }
+        public OrderEntity Entity { get; private set; } = entity ?? throw new Exception($"{nameof(OrderEntity)} is null.");
 
         public List<OrderItemEntity> Items { get; private set; } = [];
 
-        public OrderAgg(decimal amount)
+        public static OrderAgg Create(decimal amount)
         {
-            Entity = new OrderEntity
+            var entity = new OrderEntity
             {
                 Id = Guid.NewGuid(),
                 Amount = amount,
@@ -18,6 +18,8 @@ namespace SampleProject.Domain.Domains.Aggregate.Order
             };
 
             //this.AddDomainEvent(new OrderStartedEvent(this));
+
+            return new OrderAgg(entity);
         }
 
         public void AddItem()

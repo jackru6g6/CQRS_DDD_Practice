@@ -68,5 +68,10 @@ namespace SampleProject.Domain.Repositories
                 _optimisticLockV1.Add(order.Entity.Id, EntityState.Modified);
             }
         }
+
+        public void Delete(OrderAgg order)
+        {
+            _memory.RemoveAll(t => t.Entity.Id == order.Entity.Id);
+        }
     }
 }

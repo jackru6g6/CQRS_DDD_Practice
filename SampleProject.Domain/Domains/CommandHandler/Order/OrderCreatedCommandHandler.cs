@@ -18,7 +18,7 @@ namespace SampleProject.Domain.Domains.CommandHandler.Order
         {
             _orderRepo.Get(Guid.NewGuid());
 
-            var orderAgg = new OrderAgg(request.Amount);
+            var orderAgg = OrderAgg.Create(request.Amount);
             _orderRepo.Add(orderAgg);
 
             return Task.FromResult(orderAgg.Entity.Id);

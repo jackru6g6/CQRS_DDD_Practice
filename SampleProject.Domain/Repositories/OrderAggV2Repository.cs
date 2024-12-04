@@ -1,7 +1,8 @@
 ﻿using SampleProject.Domain.Domains.Aggregate.Order;
-using SampleProject.Domain.Exceptions;
 using SampleProject.Domain.Interceptors.OptimisticLock.Attribute;
 using SampleProject.Domain.Interfaces.Repository;
+using SampleProject.Domain.Repositories.Entity;
+using System;
 
 namespace SampleProject.Domain.Repositories
 {
@@ -19,7 +20,7 @@ namespace SampleProject.Domain.Repositories
         /// <summary>
         /// 替代真實資料庫
         /// </summary>
-        private List<OrderAgg> _memoryDb = [];
+        private List<OrderEntity> _memoryDb = [];
 
         /// <summary>
         /// - Entity 沒有在歡樂鎖內，則寫入
@@ -28,44 +29,11 @@ namespace SampleProject.Domain.Repositories
         /// <param name="id"></param>
         /// <returns></returns>
         [Select]
-        public OrderAgg? Get(Guid id)
+        public OrderAgg Get(Guid id)
         {
-            var domain = _memoryDb.FirstOrDefault(t => t.Entity.Id == id);
+            var entity = _memoryDb.FirstOrDefault(t => t.Id == id);
 
-            // 有加入歡樂鎖才判斷
-            if (domain is { Entity: IOptimisticLock })
-            {
-                var @lock = domain.Entity as IOptimisticLock;
-
-                if (_optimisticLock.ContainsKey(@lock.Key))
-                {
-                    var oldVersion = _optimisticLock[@lock.Key];
-
-                    if (@lock.Version == oldVersion)
-                    {
-                        // 情境1：版本與 _optimisticLockV2 相同，表示沒有更新，直接 return
-                        return domain;
-                    }
-                    else
-                    {
-                        // 情境2：版本與 _optimisticLockV2 部同，表示有更新，需要重新取得資料，直到版本一致(可以設定 retry 次數)
-                        domain = _memoryDb.FirstOrDefault(t => t.Entity.Id == id);
-                        // 省略判斷版本與 retry 機制
-
-                        return domain;
-                    }
-                }
-                else
-                {
-                    // 如果鍵不存在，則添加新的鍵值對，表示這筆資料已經被讀取
-                    _optimisticLock.Add(@lock.Key, @lock.Version);
-                }
-            }
-
-            // 測試用
-            domain = new OrderAgg(123.1m) { };
-
-            return domain;
+            return new OrderAgg(entity);
         }
 
         /// <summary>
@@ -75,73 +43,30 @@ namespace SampleProject.Domain.Repositories
         /// <exception cref="Exception"></exception>
         public void Add(OrderAgg domain)
         {
-            if (_memoryDb.Any(t => t.Entity.Id == domain.Entity.Id))
+            if (_memoryDb.Any(t => t.Id == domain.Entity.Id))
             {
                 throw new Exception("Order Id is repeated.");
             }
 
-            _memoryDb.Add(domain);
+            _memoryDb.Add(domain.Entity);
         }
 
         /// <summary>
         /// - Entity 更新歡樂鎖版本
         /// </summary>
         /// <param name="domain"></param>
-        /// <exception cref="Exception"></exception>
+        [Update]
         public void Update(OrderAgg domain)
         {
-            IOptimisticLock? @lock = null;
-            if (domain.Entity is IOptimisticLock)
-            {
-                @lock = domain.Entity;
-            }
-
-            // 判斷樂觀鎖，版本是否一致
-            if (@lock is not null)
-            {
-                if (_optimisticLock.ContainsKey(@lock.Key))
-                {
-                    var oldVersion = _optimisticLock[@lock.Key];
-
-                    if (@lock.Version == oldVersion)
-                    {
-                        // 情境1：版本與 _optimisticLockV2 相同，表示沒有更新，直接 update
-                    }
-                    else
-                    {
-                        // 情境2：版本與 _optimisticLockV2 部同，表示有更新，前置邏輯需要重新運作
-                        //throw new Exception("OptimisticLock version is not same.");
-                        throw new OptimisticLockException();
-                    }
-                }
-                else
-                {
-                    // 測試用
-                    throw new OptimisticLockException();
-
-                    // 正常不會有不存在，因為 Get 時會先加入！！！
-                    throw new Exception("OptimisticLock exception");
-                }
-            }
-
             // 假 DB 動作
-            //_memory.Remove()
-            //_memory.Add()
+            //_memoryDb.Remove()
+            //_memoryDb.Add()
+        }
 
-            // 更新歡樂鎖版本
-            if (@lock is not null)
-            {
-                if (_optimisticLock.ContainsKey(@lock.Key))
-                {
-                    _optimisticLock[@lock.Key] = @lock.Version;
-                }
-                else
-                {
-                    // 正常不會有不存在，因為 Get 時會先加入！！！
-                    throw new Exception("OptimisticLock exception");
-                    //_optimisticLockV2.Add(@lock.Key, @lock.Version);
-                }
-            }
+        [Delete]
+        public void Delete(OrderAgg order)
+        {
+            _memoryDb.RemoveAll(t => t.Id == order.Entity.Id);
         }
     }
 }

@@ -28,7 +28,14 @@ namespace SampleProject.Domain.Applications.Adapter
             {
                 try
                 {
-                    var method = handler.HandlerInstance.GetType().GetMethod("Handle");
+                    //var method = handler.HandlerInstance.GetType().GetMethod("Handle");
+
+                    // 有可能有多個方法，多判斷傳入參數是否符合
+                    var method = handler.HandlerInstance.GetType().GetMethods()
+                                        .Where(m => m.Name == "Handle" &&
+                                                    m.GetParameters().Any(p => p.ParameterType == notification.GetType()))
+                                        .FirstOrDefault();
+
                     var hasRetryAttribute = method is not null &&
                                             method.GetCustomAttribute<RetryEventAttribute>() is not null;
 

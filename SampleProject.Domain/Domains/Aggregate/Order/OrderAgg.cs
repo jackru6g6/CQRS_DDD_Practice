@@ -1,4 +1,5 @@
-﻿using SampleProject.Domain.Domains.Event.Order;
+﻿using SampleProject.Domain.Domains.Command.Order;
+using SampleProject.Domain.Domains.Event.Order;
 using SampleProject.Domain.Repositories.Entity;
 
 namespace SampleProject.Domain.Domains.Aggregate.Order
@@ -9,31 +10,30 @@ namespace SampleProject.Domain.Domains.Aggregate.Order
 
         public List<OrderItemEntity> Items { get; private set; } = [];
 
-        public static OrderAgg Create(decimal amount)
+        /// <summary>
+        /// 建立訂單聚合物件
+        /// </summary>
+        /// <remarks>
+        /// 利用工廠模式
+        /// </remarks>
+        /// <param name="amount"></param>
+        /// <returns></returns>
+        public static OrderAgg Create(OrderCreatedCommand request)
         {
             var entity = new OrderEntity
             {
                 Id = Guid.NewGuid(),
-                Amount = amount,
+                Amount = request.Amount,
                 CreateTime = DateTime.Now,
             };
 
-            return new OrderAgg(entity);
-        }
-
-        public OrderAgg(decimal amount) : this(new OrderEntity { })
-        {
-            Entity = new OrderEntity
+            var result = new OrderAgg(entity);
+            result.AddDomainEvent(new OrderCreatedEvent
             {
-                Id = Guid.NewGuid(),
-                Amount = amount,
-                CreateTime = DateTime.Now,
-            };
-
-            AddDomainEvent(new OrderCreatedEvent
-            {
-                Id = Entity.Id,
+                Id = entity.Id,
             });
+
+            return result;
         }
 
         public void AddItem()
@@ -42,7 +42,8 @@ namespace SampleProject.Domain.Domains.Aggregate.Order
             //this.AddDomainEvent(new OrderItemStartedEvent(addItme));
 
             Items.Add(addItme);
-            //this.AddDomainEvent(new OrderItemAddedEvent(addItme));
+
+            AddDomainEvent(new OrderItemAddedEvent { Id = Entity.Id });
         }
     }
 }

@@ -27,7 +27,14 @@ namespace SampleProject.Domain.Domains.Aggregate
 
         public IReadOnlyCollection<INotification> DomainEvents => _domainEvents?.AsReadOnly();
 
-        public void AddDomainEvent(INotification eventItem)
+        /// <summary>
+        /// 加入通知事件
+        /// </summary>
+        /// <remarks>
+        /// 故意用 protected，避免外部直接呼叫，但可以由聚合自己呼叫
+        /// </remarks>
+        /// <param name="eventItem"></param>
+        protected void AddDomainEvent(INotification eventItem)
         {
             _domainEvents = _domainEvents ?? new List<INotification>();
             _domainEvents.Add(eventItem);

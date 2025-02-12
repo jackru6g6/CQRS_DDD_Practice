@@ -33,10 +33,9 @@ namespace SampleProject.Domain.Repositories
         /// <param name="id"></param>
         /// <returns></returns>
         [Select]
-        [Update]
         public OrderAgg Get(Guid id)
         {
-            var entity = _memoryDb.FirstOrDefault(t => t.Id == id);
+            var entity = _memoryDb.FirstOrDefault(t => t.Id == id) ?? new OrderEntity { };
 
             return new OrderAgg(entity);
         }
@@ -65,15 +64,22 @@ namespace SampleProject.Domain.Repositories
         [Update]
         public void Update(OrderAgg domain)
         {
-            // 假 DB 動作
-            //_memoryDb.Remove()
-            //_memoryDb.Add()
+            _memoryDb.Where(t => t.Id == domain.Entity.Id)
+                .ToList()
+                .ForEach(t =>
+                {
+                    t = domain.Entity;
+                });
+
+            base.SendEvent(domain);
         }
 
         [Delete]
         public void Delete(OrderAgg order)
         {
             _memoryDb.RemoveAll(t => t.Id == order.Entity.Id);
+
+            base.SendEvent(order);
         }
     }
 }

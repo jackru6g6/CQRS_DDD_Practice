@@ -3,7 +3,6 @@ using SampleProject.API.Model.Base;
 using SampleProject.API.Model.Order.Request;
 using SampleProject.API.Model.Order.Response;
 using SampleProject.Domain.Domains.Command.Order;
-using SampleProject.Domain.Infrastructures;
 using SampleProject.Domain.Interfaces.Application;
 using SampleProject.Domain.Interfaces.Repository;
 
@@ -35,8 +34,8 @@ namespace SampleProject.Domain.Applications
 
         public async Task<ApiResult<CreateResponse>> Create(CreateRequest request)
         {
-            // 協調業務流程(不僅限於一個 command)
-            //var command = MapperProvider.Map<OrderCreatedCommand>(request);
+            // 協調業務流程(不僅限於一個 command)，如果需要，可以多個 command
+            // var command = MapperProvider.Map<OrderCreatedCommand>(request);
             var command = new OrderCreatedCommand
             {
                 Name = "test",
@@ -45,7 +44,11 @@ namespace SampleProject.Domain.Applications
 
             var commandResult = await _mediator.Send(command);
 
-            return HandleSuccess<CreateResponse>(MapperProvider.Map<CreateResponse>(commandResult));
+            //return HandleSuccess<CreateResponse>(MapperProvider.Map<CreateResponse>(commandResult));
+            return HandleSuccess<CreateResponse>(new CreateResponse
+            {
+                Id = commandResult,
+            });
         }
     }
 }

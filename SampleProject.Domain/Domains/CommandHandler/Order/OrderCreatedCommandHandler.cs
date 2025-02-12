@@ -14,16 +14,9 @@ namespace SampleProject.Domain.Domains.CommandHandler.Order
             _orderRepo = orderRepo;
         }
 
-        public Task<Guid> Handle(OrderCreatedCommand request, CancellationToken cancellationToken)
+        public Task<Guid> Handle(OrderCreatedCommand command, CancellationToken cancellationToken)
         {
-            //_orderRepo.Get(Guid.NewGuid());
-            
-            // v1
-            //var orderAgg = OrderAgg.Create(request.Amount);
-            //_orderRepo.Add(orderAgg);
-
-            // v2, domain event
-            var orderAgg = new OrderAgg(request.Amount);
+            var orderAgg = OrderAgg.Create(command);
             _orderRepo.Add(orderAgg);
 
             return Task.FromResult(orderAgg.Entity.Id);

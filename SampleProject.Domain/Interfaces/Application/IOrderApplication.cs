@@ -6,6 +6,8 @@ namespace SampleProject.Domain.Interfaces.Application
 {
     public interface IOrderApplication
     {
+        Task<ApiResult<GetOrderResponse>> Get(GetOrderRequest request);
+
         Task<ApiResult<CreateResponse>> Create(CreateRequest request);
     }
 }

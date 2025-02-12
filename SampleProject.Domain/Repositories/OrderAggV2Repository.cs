@@ -1,8 +1,8 @@
-﻿using SampleProject.Domain.Domains.Aggregate.Order;
+﻿using MediatR;
+using SampleProject.Domain.Domains.Aggregate.Order;
 using SampleProject.Domain.Interceptors.OptimisticLock.Attribute;
 using SampleProject.Domain.Interfaces.Repository;
 using SampleProject.Domain.Repositories.Entity;
-using System;
 
 namespace SampleProject.Domain.Repositories
 {
@@ -10,7 +10,7 @@ namespace SampleProject.Domain.Repositories
     /// 要用 Singleton (因為範例的歡樂鎖存在 local memory，未來改用其他就可以不用 Singleton)
     /// </summary>
     //[Intercept(typeof(SelectInterceptor))]
-    public class OrderAggV2Repository : IOrderAggRepository
+    public class OrderAggV2Repository : BaseRepository, IOrderAggRepository
     {
         /// <summary>
         /// 樂觀鎖 (v2版)
@@ -22,6 +22,10 @@ namespace SampleProject.Domain.Repositories
         /// </summary>
         private List<OrderEntity> _memoryDb = [];
 
+        public OrderAggV2Repository(IMediator mediator) : base(mediator)
+        {
+        }
+
         /// <summary>
         /// - Entity 沒有在歡樂鎖內，則寫入
         /// - Entity 有在歡樂鎖內，則表示同一時間有多服務在操作此 Entity，要小心會取得舊資料
@@ -29,6 +33,7 @@ namespace SampleProject.Domain.Repositories
         /// <param name="id"></param>
         /// <returns></returns>
         [Select]
+        [Update]
         public OrderAgg Get(Guid id)
         {
             var entity = _memoryDb.FirstOrDefault(t => t.Id == id);
@@ -49,6 +54,8 @@ namespace SampleProject.Domain.Repositories
             }
 
             _memoryDb.Add(domain.Entity);
+
+            base.SendEvent(domain);
         }
 
         /// <summary>

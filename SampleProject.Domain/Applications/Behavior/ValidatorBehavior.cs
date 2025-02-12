@@ -16,6 +16,7 @@ namespace SampleProject.Domain.Applications.Behavior
 
         public ValidatorBehavior(ILogger<ValidatorBehavior<TRequest, TResponse>> logger, IEnumerable<IValidator<TRequest>> validators)
         {
+            var a = validators.ToList();
             _logger = logger;
             _validators = validators;
         }

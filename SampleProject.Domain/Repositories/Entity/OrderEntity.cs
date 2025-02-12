@@ -11,12 +11,12 @@ namespace SampleProject.Domain.Repositories.Entity
 
         public OrderEntity()
         {
-            _version = new Lazy<string>(() => ModifyTime?.ToString());
+            _version = new Lazy<string?>(() => ModifyTime?.ToString());
         }
 
         public Guid Id { get; set; }
 
-        public string No { get; set; }
+        public string? No { get; set; }
 
         public decimal Amount { get; set; }
 

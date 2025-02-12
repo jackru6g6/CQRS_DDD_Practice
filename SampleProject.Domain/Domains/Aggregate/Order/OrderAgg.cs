@@ -1,4 +1,5 @@
-﻿using SampleProject.Domain.Repositories.Entity;
+﻿using SampleProject.Domain.Domains.Event.Order;
+using SampleProject.Domain.Repositories.Entity;
 
 namespace SampleProject.Domain.Domains.Aggregate.Order
 {
@@ -17,9 +18,22 @@ namespace SampleProject.Domain.Domains.Aggregate.Order
                 CreateTime = DateTime.Now,
             };
 
-            //this.AddDomainEvent(new OrderStartedEvent(this));
-
             return new OrderAgg(entity);
+        }
+
+        public OrderAgg(decimal amount) : this(new OrderEntity { })
+        {
+            Entity = new OrderEntity
+            {
+                Id = Guid.NewGuid(),
+                Amount = amount,
+                CreateTime = DateTime.Now,
+            };
+
+            AddDomainEvent(new OrderCreatedEvent
+            {
+                Id = Entity.Id,
+            });
         }
 
         public void AddItem()

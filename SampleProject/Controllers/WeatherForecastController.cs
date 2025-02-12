@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SampleProject.Domain.Interfaces.Application;
 
 namespace SampleProject.Controllers
 {
@@ -13,20 +12,15 @@ namespace SampleProject.Controllers
         ];
 
         private readonly ILogger<WeatherForecastController> _logger;
-        private readonly IOrderApplication _appService;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger, IOrderApplication appService)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger)
         {
             _logger = logger;
-            _appService = appService;
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
         public async Task<IEnumerable<WeatherForecast>> Get()
         {
-            // 測試用
-            var result = await _appService.Create(new API.Model.Order.Request.CreateRequest { });
-
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
                 Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),

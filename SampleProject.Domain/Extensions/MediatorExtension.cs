@@ -11,6 +11,7 @@ namespace SampleProject.Domain.Extensions
     /// </summary>
     public static class MediatorExtension
     {
+        // 微軟範例
         //public static async Task DispatchDomainEventsAsync(this IMediator mediator, params Entity[] entities)
         //{
         //    var domainEntities = entities.Where(x => x.DomainEvents != null && x.DomainEvents.Any());
@@ -32,7 +33,7 @@ namespace SampleProject.Domain.Extensions
         public static async Task DispatchDomainEventsAsync(this IMediator mediator, params IAggregateRoot[] aggre)
         {
             var domainEntities = aggre.SelectMany(t => FindEntities(t))
-                                      .Where(t => t.DomainEvents != null && t.DomainEvents.Any())
+                                      .Where(t => t.DomainEvents is not null && t.DomainEvents.Any())
                                       .ToList();
 
             // 取得即將要通知的事件

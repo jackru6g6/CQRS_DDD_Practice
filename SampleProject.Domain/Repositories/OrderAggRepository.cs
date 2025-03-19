@@ -14,11 +14,11 @@ namespace SampleProject.Domain.Repositories
         /// </summary>
         private Dictionary<Guid, EntityState> _optimisticLockV1 = [];
 
-        private List<OrderAgg> _memory = [];
+        private List<Order> _memory = [];
 
-        public OrderAgg? Get(Guid id)
+        public Order? Get(Guid id)
         {
-            var result = _memory.FirstOrDefault(t => t.Entity.Id == id);
+            var result = _memory.FirstOrDefault(t => t.RootEntity.Id == id);
 
             if (result is not null)
             {
@@ -35,22 +35,22 @@ namespace SampleProject.Domain.Repositories
             return result;
         }
 
-        public void Add(OrderAgg order)
+        public void Add(Order order)
         {
-            if (_memory.Any(t => t.Entity.Id == order.Entity.Id))
+            if (_memory.Any(t => t.RootEntity.Id == order.RootEntity.Id))
             {
                 throw new Exception("Order Id is repeated.");
             }
 
             _memory.Add(order);
 
-            _optimisticLockV1.Add(order.Entity.Id, EntityState.Added);
+            _optimisticLockV1.Add(order.RootEntity.Id, EntityState.Added);
         }
 
 
-        public void Update(OrderAgg order)
+        public void Update(Order order)
         {
-            if (_optimisticLockV1.TryGetValue(order.Entity.Id, out var state) &&
+            if (_optimisticLockV1.TryGetValue(order.RootEntity.Id, out var state) &&
                 state is EntityState.Modified)
             {
                 throw new Exception("Pessimistic Lock failed.");
@@ -59,19 +59,19 @@ namespace SampleProject.Domain.Repositories
             //_memory.Remove()
             //_memory.Add()
 
-            if (_optimisticLockV1.ContainsKey(order.Entity.Id))
+            if (_optimisticLockV1.ContainsKey(order.RootEntity.Id))
             {
-                _optimisticLockV1[order.Entity.Id] = EntityState.Modified;
+                _optimisticLockV1[order.RootEntity.Id] = EntityState.Modified;
             }
             else
             {
-                _optimisticLockV1.Add(order.Entity.Id, EntityState.Modified);
+                _optimisticLockV1.Add(order.RootEntity.Id, EntityState.Modified);
             }
         }
 
-        public void Delete(OrderAgg order)
+        public void Delete(Order order)
         {
-            _memory.RemoveAll(t => t.Entity.Id == order.Entity.Id);
+            _memory.RemoveAll(t => t.RootEntity.Id == order.RootEntity.Id);
         }
     }
 }

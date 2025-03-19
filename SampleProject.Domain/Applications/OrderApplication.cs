@@ -26,9 +26,9 @@ namespace SampleProject.Domain.Applications
             // 轉換提供外界的 DTO
             return HandleSuccess<GetOrderResponse>(new GetOrderResponse
             {
-                Id = order.Entity.Id,
-                Title = order.Entity.No,
-                Amount = order.Entity.Amount,
+                Id = order.RootEntity.Id,
+                Title = order.RootEntity.No,
+                Amount = order.RootEntity.Amount,
             });
         }
 

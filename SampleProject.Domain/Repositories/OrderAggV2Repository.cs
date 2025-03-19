@@ -20,7 +20,7 @@ namespace SampleProject.Domain.Repositories
         /// <summary>
         /// 替代真實資料庫
         /// </summary>
-        private List<OrderEntity> _memoryDb = [];
+        private List<OrderEntity> _memoryDb = [new OrderEntity { Id = Guid.Parse("E705D262-B82D-40E5-AE94-C16B5CBDBAE1"), Amount = 99.12m }];
 
         public OrderAggV2Repository(IMediator mediator) : base(mediator)
         {
@@ -33,9 +33,9 @@ namespace SampleProject.Domain.Repositories
         /// <param name="id"></param>
         /// <returns></returns>
         [Select]
-        public OrderAgg Get(Guid id)
+        public Order Get(Guid id)
         {
-            var entity = _memoryDb.FirstOrDefault(t => t.Id == id) ?? new OrderEntity { };
+            var entity = _memoryDb.FirstOrDefault(t => t.Id == id);
 
             return new OrderAgg(entity);
         }
@@ -45,14 +45,14 @@ namespace SampleProject.Domain.Repositories
         /// </summary>
         /// <param name="domain"></param>
         /// <exception cref="Exception"></exception>
-        public void Add(OrderAgg domain)
+        public void Add(Order domain)
         {
-            if (_memoryDb.Any(t => t.Id == domain.Entity.Id))
+            if (_memoryDb.Any(t => t.Id == domain.RootEntity.Id))
             {
                 throw new Exception("Order Id is repeated.");
             }
 
-            _memoryDb.Add(domain.Entity);
+            _memoryDb.Add(domain.RootEntity);
 
             base.SendEvent(domain);
         }
@@ -62,22 +62,22 @@ namespace SampleProject.Domain.Repositories
         /// </summary>
         /// <param name="domain"></param>
         [Update]
-        public void Update(OrderAgg domain)
+        public void Update(Order domain)
         {
-            _memoryDb.Where(t => t.Id == domain.Entity.Id)
+            _memoryDb.Where(t => t.Id == domain.RootEntity.Id)
                 .ToList()
                 .ForEach(t =>
                 {
-                    t = domain.Entity;
+                    t = domain.RootEntity;
                 });
 
             base.SendEvent(domain);
         }
 
         [Delete]
-        public void Delete(OrderAgg order)
+        public void Delete(Order order)
         {
-            _memoryDb.RemoveAll(t => t.Id == order.Entity.Id);
+            _memoryDb.RemoveAll(t => t.Id == order.RootEntity.Id);
 
             base.SendEvent(order);
         }

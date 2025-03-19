@@ -123,6 +123,11 @@ namespace SampleProject.Domain.Extensions
                 if (propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof(List<>))
                 {
                     IEnumerable enumerable = (IEnumerable)prop.GetValue(obj);
+                    if (enumerable is null)
+                    {
+                        continue;
+                    }
+
                     foreach (var item in enumerable)
                     {
                         foreach (var entityItem in FindEntities(item))

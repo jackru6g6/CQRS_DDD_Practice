@@ -37,7 +37,7 @@ namespace SampleProject.Domain.Repositories
         {
             var entity = _memoryDb.FirstOrDefault(t => t.Id == id);
 
-            return new OrderAgg(entity);
+            return new Order(entity, null);
         }
 
         /// <summary>

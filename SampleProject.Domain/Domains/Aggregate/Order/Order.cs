@@ -35,10 +35,7 @@ namespace SampleProject.Domain.Domains.Aggregate.Order
             };
 
             var result = new Order(entity, null);
-            result.AddDomainEvent(new OrderCreatedEvent
-            {
-                Id = entity.Id,
-            });
+            result.AddDomainEvent(new OrderCreatedEvent { Id = entity.Id, });
 
             return result;
         }

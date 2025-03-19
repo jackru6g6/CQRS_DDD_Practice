@@ -190,27 +190,22 @@
    結論：建立個別情境不同的 SP，但最終結果是輸出 Entity ID，並利用此 ID 查詢建立 Domain Model。
 
 ```SQL
-SELECT TOP 1 [Order].Id As Id, [order].OrderNo As OrderNo
-FROM dbo. ThirdPartyOrders [Order WITH( NOLOCK
-INNER JOIN dbo.ThirdPartyOrdersExtend [Extend] WITH(NOLOCK) ON [Extend].ThirdPartyorderId = [Order].Id
-INNER JOIN dbo.MerchantOrders [MerchantOrder] WITH(NOLOCK ON [MerchantOrder].Id = [Order].MerchantorderId
-WHERE [Order].ThirdPartyChannelid = @ThirdPartyChannelId
-AND [Order].OrderStatus = 2 --Process 
-AND [Order].Ordertime >= DATEADD(HOUR, -2, dbo.fn_GetSysDate())
+SELECT TOP 1 [Order].[Id] AS [Id], [Order].[No] AS [OrderNo]
+FROM [dbo].[Orders] AS [Order] WITH (NOLOCK)
+INNER JOIN [dbo].[OrdersExtend] AS [Extend] WITH(NOLOCK) ON [Extend].[Id] = [Order].[Id]
+WHERE [Order].[Id] = @Id
+AND [Order].[OrderStatus] = 2
+AND [Order].[Ordertime] >= DATEADD(HOUR, -2, dbo.fn_GetSysDate())
 AND [Extend].[Address] LIKE '%' @Address +'%' --討論此行
-AND [Merchantorder].OrderStatus = 0  --Unprocessed
-ORDER BY [Order].OrderTime DESC
+ORDER BY [Order].[OrderTime] DESC
 ```
 
 ---
 
 # 基礎邏輯架構圖
 
-![pictures/Untitled.png](D:\Jack's Home\個人\Code\SampleProject\file\pictures\Untitled.png)
 
 邏輯組成
-
-![pictures/Untitled%201.png](D:\Jack's Home\個人\Code\SampleProject\file\pictures\Untitled 1.png)
 
 ---
 

@@ -14,7 +14,7 @@ namespace SampleProject.Domain.Domains.Aggregate.Order
         public Order(OrderEntity? entity, IEnumerable<OrderItemEntity>? items)
         {
             RootEntity = entity ?? throw new EntityNullException(nameof(OrderEntity));
-            Items = items?.ToList();
+            Items = items?.ToList() ?? [];
         }
 
         /// <summary>

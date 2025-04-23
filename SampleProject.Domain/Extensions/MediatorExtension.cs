@@ -38,7 +38,7 @@ namespace SampleProject.Domain.Extensions
 
             // 取得即將要通知的事件
             var domainEvents = domainEntities.SelectMany(x => x.DomainEvents)
-                                             .ToList();
+                                                             .ToList();
 
             // 清除事件
             domainEntities.ToList()

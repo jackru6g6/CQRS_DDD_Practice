@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using SampleProject.Domain.Domains.Aggregate.Order;
 using SampleProject.Domain.Domains.Command.Order;
 using SampleProject.Domain.Interfaces.Repository;
 

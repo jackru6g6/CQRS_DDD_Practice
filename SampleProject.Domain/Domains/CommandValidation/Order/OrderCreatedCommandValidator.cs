@@ -7,7 +7,10 @@ namespace SampleProject.Domain.Domains.CommandValidation.Order
     {
         public IEnumerable<string> Validate(OrderCreatedCommand request)
         {
-            throw new NotImplementedException();
+            if(request.Amount <= 0)
+            {
+                yield return $"金額不可低於或等於0";
+            }
         }
     }
 }

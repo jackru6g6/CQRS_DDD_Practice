@@ -4,12 +4,12 @@ namespace SampleProject.Domain.Interfaces.Repository
 {
     public interface IOrderAggRepository
     {
-        OrderAgg Get(Guid id);
+        Order Get(Guid id);
 
-        void Add(OrderAgg order);
+        void Add(Order order);
 
-        void Update(OrderAgg order);
+        void Update(Order order);
 
-        void Delete(OrderAgg order);
+        void Delete(Order order);
     }
 }

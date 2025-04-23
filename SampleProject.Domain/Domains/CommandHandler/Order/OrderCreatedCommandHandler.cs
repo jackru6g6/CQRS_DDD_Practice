@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using SampleProject.Domain.Domains.Aggregate.Order;
 using SampleProject.Domain.Domains.Command.Order;
 using SampleProject.Domain.Interfaces.Repository;
 
@@ -14,14 +13,12 @@ namespace SampleProject.Domain.Domains.CommandHandler.Order
             _orderRepo = orderRepo;
         }
 
-        public Task<Guid> Handle(OrderCreatedCommand request, CancellationToken cancellationToken)
+        public Task<Guid> Handle(OrderCreatedCommand command, CancellationToken cancellationToken)
         {
-            _orderRepo.Get(Guid.NewGuid());
-
-            var orderAgg = OrderAgg.Create(request.Amount);
+            var orderAgg = Aggregate.Order.Order.Create(command);
             _orderRepo.Add(orderAgg);
 
-            return Task.FromResult(orderAgg.Entity.Id);
+            return Task.FromResult(orderAgg.RootEntity.Id);
         }
     }
 }

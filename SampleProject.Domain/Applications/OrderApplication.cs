@@ -2,34 +2,53 @@
 using SampleProject.API.Model.Base;
 using SampleProject.API.Model.Order.Request;
 using SampleProject.API.Model.Order.Response;
-using SampleProject.Domain.Domains.Event.Order;
-using SampleProject.Domain.Infrastructures;
+using SampleProject.Domain.Domains.Command.Order;
 using SampleProject.Domain.Interfaces.Application;
+using SampleProject.Domain.Interfaces.Repository;
 
 namespace SampleProject.Domain.Applications
 {
     public class OrderApplication : BaseApplication, IOrderApplication
     {
         private readonly IMediator _mediator;
+        private readonly IOrderAggRepository _repo;
 
-        public OrderApplication(IMediator mediator)
+        public OrderApplication(IMediator mediator, IOrderAggRepository repo)
         {
             _mediator = mediator;
+            _repo = repo;
+        }
+
+        public async Task<ApiResult<GetOrderResponse>> Get(GetOrderRequest request)
+        {
+            var order = _repo.Get(request.Id);
+
+            // 轉換提供外界的 DTO
+            return HandleSuccess<GetOrderResponse>(new GetOrderResponse
+            {
+                Id = order.RootEntity.Id,
+                Title = order.RootEntity.No,
+                Amount = order.RootEntity.Amount,
+            });
         }
 
         public async Task<ApiResult<CreateResponse>> Create(CreateRequest request)
         {
-            await _mediator.Publish(new OrderCreatedEvent { Id = Guid.Parse("90C4D81A-4C56-4880-89DE-FBAB1E5DA5C1") });
-            //var testEventResponse = await _mediator.Send(new OrderCreatedCommand { });
+            // 協調業務流程(不僅限於一個 command)，如果需要，可以多個 command
+            // var command = MapperProvider.Map<OrderCreatedCommand>(request);
+            var command = new OrderCreatedCommand
+            {
+                Name = "test",
+                Amount = request.Amount
+            };
 
-            return null;
+            var commandResult = await _mediator.Send(command);
 
-
-            var @event = MapperProvider.Map<CreateRequest>(request);
-
-            var eventResponse = await _mediator.Send(@event);
-
-            return HandleSuccess<CreateResponse>(MapperProvider.Map<CreateResponse>(eventResponse));
+            //return HandleSuccess<CreateResponse>(MapperProvider.Map<CreateResponse>(commandResult));
+            return HandleSuccess<CreateResponse>(new CreateResponse
+            {
+                Id = commandResult,
+            });
         }
     }
 }

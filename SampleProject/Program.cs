@@ -2,6 +2,7 @@
 using Autofac.Extensions.DependencyInjection;
 using Autofac.Extras.DynamicProxy;
 using Castle.DynamicProxy;
+using MediatR;
 using SampleProject.Domain.Applications;
 using SampleProject.Domain.Applications.Adapter;
 using SampleProject.Domain.Applications.Behavior;
@@ -26,6 +27,10 @@ public static class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
+        // DI Container
+        builder.Services.AddScoped<IOrderApplication, OrderApplication>();
+        builder.Services.AddSingleton<INotificationPublisher, OptimisticLockExceptionRertyAdapterHandler>();
+
         #region 客製化設定
 
         // MediatR 配置
@@ -47,12 +52,10 @@ public static class Program
             //cfg.NotificationPublisher = new ForeachAwaitPublisher();
 
             // 客制化
-            cfg.NotificationPublisher = new OptimisticLockExceptionRertyAdapterHandler();
+            cfg.NotificationPublisher = builder.Services.BuildServiceProvider().GetRequiredService<INotificationPublisher>();
+            //cfg.NotificationPublisher = new OptimisticLockExceptionRertyAdapterHandler();
         });
 
-        // DI Container
-        builder.Services.AddScoped<IOrderApplication, OrderApplication>();
-        
         // Action Filter
         builder.Services.AddMvc(options =>
         {
@@ -76,7 +79,7 @@ public static class Program
         builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
         {
             // 註冊攔截器
-            containerBuilder.RegisterType<OptimisticLockInterceptor>(); 
+            containerBuilder.RegisterType<OptimisticLockInterceptor>();
 
             // RegisterAssemblyTypes => 註冊所有集合
             // Where(t => t.Name.EndsWith("Service")) => 找出所有Service結尾的檔案
@@ -92,11 +95,13 @@ public static class Program
             //    .As<IMyService>()
             //    .EnableInterfaceInterceptors()
             //    .InterceptedBy(typeof(LoggingInterceptor));
+
+            BindingByAssembly(containerBuilder, "Validator");
         });
 
         #endregion
 
-        #endregion
+        #endregion`
 
         // 構建 WebApplication
         var app = builder.Build();
@@ -132,5 +137,23 @@ public static class Program
         });
 
         return services;
+    }
+
+    /// <summary>
+    /// Bindings the by assembly.
+    /// </summary>
+    /// <param name="builder">The builder.</param>
+    /// <param name="assemblyName">Name of the assembly.</param>
+    /// <param name="endName">The end name.</param>
+    private static void BindingByAssembly(ContainerBuilder builder, string endName)
+    {
+        // 指定 DLL 檔案結尾名稱 binding
+        builder.RegisterAssemblyTypes(_domainAssembly)
+            .Where(t => t.Name.EndsWith(endName))
+            .InstancePerLifetimeScope()
+            .AsImplementedInterfaces();
+        //.SingleInstance().EnableInterfaceInterceptors()
+        //.InterceptedBy(typeof(CustomExceptionInterceptor));
+        //.InstancePerLifetimeScope();
     }
 }

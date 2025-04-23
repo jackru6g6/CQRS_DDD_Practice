@@ -23,11 +23,21 @@ namespace SampleProject.Domain.Domains.Aggregate
         /// <summary>
         /// 通知事件
         /// </summary>
+        /// <remarks>
+        /// 微軟範例是在 Entity 中，但我覺得應該放在 AggregateRoot，因為 Entity 可能會有多個，但 AggregateRoot 只有一個。
+        /// </remarks>
         private List<INotification> _domainEvents;
 
         public IReadOnlyCollection<INotification> DomainEvents => _domainEvents?.AsReadOnly();
 
-        public void AddDomainEvent(INotification eventItem)
+        /// <summary>
+        /// 加入通知事件
+        /// </summary>
+        /// <remarks>
+        /// 故意用 protected，避免外部直接呼叫，但可以由聚合自己呼叫
+        /// </remarks>
+        /// <param name="eventItem"></param>
+        protected void AddDomainEvent(INotification eventItem)
         {
             _domainEvents = _domainEvents ?? new List<INotification>();
             _domainEvents.Add(eventItem);

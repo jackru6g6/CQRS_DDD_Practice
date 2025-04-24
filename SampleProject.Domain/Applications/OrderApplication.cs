@@ -2,8 +2,11 @@
 using SampleProject.API.Model.Base;
 using SampleProject.API.Model.Order.Request;
 using SampleProject.API.Model.Order.Response;
+using SampleProject.Domain.Domains.Aggregate.Order;
 using SampleProject.Domain.Domains.Command.Order;
+using SampleProject.Domain.Domains.Event.Order;
 using SampleProject.Domain.Interfaces.Application;
+using SampleProject.Domain.Interfaces.Domain.Service;
 using SampleProject.Domain.Interfaces.Repository;
 
 namespace SampleProject.Domain.Applications
@@ -13,14 +16,26 @@ namespace SampleProject.Domain.Applications
         private readonly IMediator _mediator;
         private readonly IOrderAggRepository _repo;
 
-        public OrderApplication(IMediator mediator, IOrderAggRepository repo)
+        // for test
+        private readonly IRabbitMQService _rabbitMQService;
+
+        public OrderApplication(IMediator mediator, IOrderAggRepository repo, IRabbitMQService rabbitMQService)
         {
             _mediator = mediator;
             _repo = repo;
+
+            _rabbitMQService = rabbitMQService;
         }
 
         public async Task<ApiResult<GetOrderResponse>> Get(GetOrderRequest request)
         {
+            await _rabbitMQService.SendEventAsync(new OrderCreatedV2Event
+            {
+                Order = new Order(new Repositories.Entity.OrderEntity { Id = Guid.NewGuid(), }, null),
+                Id = Guid.NewGuid(),
+                Name = "Jack",
+            });
+
             var order = _repo.Get(request.Id);
 
             // 轉換提供外界的 DTO

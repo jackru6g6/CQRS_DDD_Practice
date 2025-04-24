@@ -3,11 +3,20 @@ using Autofac.Extensions.DependencyInjection;
 using Autofac.Extras.DynamicProxy;
 using Castle.DynamicProxy;
 using MediatR;
+using Microsoft.Extensions.Options;
+using RabbitMQ.Client;
+using SampleProject.API.Setting;
 using SampleProject.Domain.Applications;
 using SampleProject.Domain.Applications.Adapter;
 using SampleProject.Domain.Applications.Behavior;
+using SampleProject.Domain.Domains.Event.Order;
+using SampleProject.Domain.Domains.EventHandler.RiskHandler;
+using SampleProject.Domain.Domains.Service;
 using SampleProject.Domain.Filters.OptimisticLock;
+using SampleProject.Domain.Infrastructures;
 using SampleProject.Domain.Interfaces.Application;
+using SampleProject.Domain.Interfaces.Domain.Service;
+using SampleProject.Domain.Interfaces.Infrastructure;
 using SampleProject.Domain.Interfaces.Repository;
 using SampleProject.Domain.Repositories;
 using System.Reflection;
@@ -30,6 +39,33 @@ public static class Program
         // DI Container
         builder.Services.AddScoped<IOrderApplication, OrderApplication>();
         builder.Services.AddSingleton<INotificationPublisher, OptimisticLockExceptionRertyAdapterHandler>();
+
+        #region RabbitMQ
+
+        // 設定 RabbitMQ 連線資訊
+        builder.Services.Configure<RabbitMQOptions>(builder.Configuration.GetSection("RabbitMQ"));
+
+        // 註冊 RabbitMQ 連線工廠
+        builder.Services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<RabbitMQOptions>>().Value;
+            var factory = new ConnectionFactory()
+            {
+                HostName = options.HostName,
+                Port = options.Port,
+                UserName = options.UserName,
+                Password = options.Password,
+            };
+
+            return new RabbitMQConnection(factory);
+        });
+
+        builder.Services.AddSingleton<IRabbitMQService, RabbitMQService>();
+
+        // 註冊事件處理器
+        builder.Services.AddScoped<INotificationHandler<OrderCreatedV2Event>, OrderEventHandler>();
+
+        #endregion
 
         #region 客製化設定
 
@@ -101,7 +137,7 @@ public static class Program
 
         #endregion
 
-        #endregion`
+        #endregion
 
         // 構建 WebApplication
         var app = builder.Build();
@@ -112,6 +148,9 @@ public static class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+
+        // 加入事件聆聽 MQ
+        app.UseTodoApplication();
 
         app.UseHttpsRedirection();
 
@@ -155,5 +194,26 @@ public static class Program
         //.SingleInstance().EnableInterfaceInterceptors()
         //.InterceptedBy(typeof(CustomExceptionInterceptor));
         //.InstancePerLifetimeScope();
+    }
+
+    /// <summary>
+    /// 註冊 MQ 聆聽事件
+    /// </summary>
+    /// <param name="app"></param>
+    /// <returns></returns>
+    public static IApplicationBuilder UseTodoApplication(this IApplicationBuilder app)
+    {
+        // 使用 IServiceScope 來取得服務的實例
+        using (var scope = app.ApplicationServices.CreateScope())
+        {
+            // 解析取得 RabbitMQService
+            //var rabbitMQService = scope.ServiceProvider.GetRequiredService<RabbitMQService>();
+            var rabbitMQService = scope.ServiceProvider.GetRequiredService<IRabbitMQService>();
+
+            // 傳入取得 EventHandlers 的 Delegate
+            rabbitMQService.StartEventListeningAsync(sp => sp.GetRequiredService<INotificationHandler<OrderCreatedV2Event>>());
+        }
+
+        return app;
     }
 }

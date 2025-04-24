@@ -12,6 +12,8 @@ namespace SampleProject.Domain.Domains.EventHandler.RiskHandler
         [RetryEvent]
         public Task Handle(OrderCreatedV2Event notification, CancellationToken cancellationToken)
         {
+            return Task.CompletedTask;
+
             // 風險控管
             var @event = OrderEvent.Create(notification);
 

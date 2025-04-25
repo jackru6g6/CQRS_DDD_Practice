@@ -9,10 +9,6 @@ using System.Text.Json;
 
 namespace SampleProject.Domain.Domains.Service
 {
-    // ref:https://github.com/rabbitmq/rabbitmq-dotnet-client/blob/main/projects/Applications/CreateChannel/Program.cs
-    // ref:https://blog.csdn.net/qq_40732336/article/details/144240143
-    // ref:https://ithelp.ithome.com.tw/m/articles/10362632
-
     public class RabbitMQService : IRabbitMQService
     {
         private readonly IServiceProvider _serviceProvider;
@@ -40,7 +36,7 @@ namespace SampleProject.Domain.Domains.Service
                                              exclusive: false,
                                              autoDelete: false,
                                              arguments: null);
-            // Serialize 
+
             var message = JsonSerializer.Serialize(integrationEvent);
             var body = Encoding.UTF8.GetBytes(message);
 
@@ -82,7 +78,6 @@ namespace SampleProject.Domain.Domains.Service
                     var body = ea.Body.ToArray();
                     var message = Encoding.UTF8.GetString(body);
 
-                    // Deserialize 
                     var integrationEvent = JsonSerializer.Deserialize<TEvent>(message);
 
                     if (integrationEvent is not null)
@@ -99,7 +94,7 @@ namespace SampleProject.Domain.Domains.Service
                 }
                 catch (Exception)
                 {
-                    // log 紀錄
+                    // TODO：log 紀錄
                 }
             };
 

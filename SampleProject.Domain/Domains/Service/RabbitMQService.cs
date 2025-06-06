@@ -76,7 +76,7 @@ namespace SampleProject.Domain.Domains.Service
                 try
                 {
                     var body = ea.Body.ToArray();
-                    var message = Encoding.UTF8.GetString(body);
+                    string? message = Encoding.UTF8.GetString(body);
 
                     var integrationEvent = JsonSerializer.Deserialize<TEvent>(message);
 

@@ -1,6 +1,6 @@
 ﻿namespace SampleProject.Domain.Enums
 {
-    public class OrderStatus : Enumeration
+    public record OrderStatus : Enumeration // class
     {
         /// <summary>
         /// 異常單
@@ -44,14 +44,14 @@
 
         public OrderStatus(int id, string name) : base(id, name) { }
 
-        public static IEnumerable<OrderStatus> List() => new[] { Abnormal, Failed, Unprocessed, Succeeded, Processing, Cancel, Review, TransactionToBeConfirmed };
+        public static IEnumerable<OrderStatus> List() => [Abnormal, Failed, Unprocessed, Succeeded, Processing, Cancel, Review, TransactionToBeConfirmed];
 
         public static OrderStatus FromName(string name)
         {
             var state = List()
                 .SingleOrDefault(s => string.Equals(s.Name, name, StringComparison.CurrentCultureIgnoreCase));
 
-            if (state == null)
+            if (state is null)
             {
                 //throw new OrderingDomainException($"Possible values for OrderStatus: {string.Join(",", List().Select(s => s.Name))}");
             }
@@ -63,9 +63,9 @@
         {
             var state = List().SingleOrDefault(s => s.Id == id);
 
-            if (state == null)
+            if (state is null)
             {
-                //throw new OrderingDomainException($"Possible values for OrderStatus: {string.Join(",", List().Select(s => s.Name))}");
+                throw new Exception($"Possible values for OrderStatus: {string.Join(",", List().Select(s => s.Name))}");
             }
 
             return state;

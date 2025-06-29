@@ -2,7 +2,7 @@
 
 namespace SampleProject.Domain.Enums
 {
-    public abstract class Enumeration : IComparable
+    public abstract record Enumeration : IComparable // class
     {
         public string Name { get; private set; }
 
@@ -19,18 +19,18 @@ namespace SampleProject.Domain.Enums
                         .Select(f => f.GetValue(null))
                         .Cast<T>();
 
-        public override bool Equals(object obj)
-        {
-            if (obj is not Enumeration otherValue)
-            {
-                return false;
-            }
+        //public override bool Equals(object obj)
+        //{
+        //    if (obj is not Enumeration otherValue)
+        //    {
+        //        return false;
+        //    }
 
-            var typeMatches = GetType().Equals(obj.GetType());
-            var valueMatches = Id.Equals(otherValue.Id);
+        //    var typeMatches = GetType().Equals(obj.GetType());
+        //    var valueMatches = Id.Equals(otherValue.Id);
 
-            return typeMatches && valueMatches;
-        }
+        //    return typeMatches && valueMatches;
+        //}
 
         public override int GetHashCode() => Id.GetHashCode();
 

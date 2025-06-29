@@ -1,11 +1,11 @@
 ﻿namespace SampleProject.Domain.Domains.ValueObject
 {
     /// <summary>
-    /// 
+    /// Value Object
     /// </summary>
-    public abstract class ValueObject
+    public abstract class ValueObjectClass
     {
-        protected static bool EqualOperator(ValueObject left, ValueObject right)
+        protected static bool EqualOperator(ValueObjectClass left, ValueObjectClass right)
         {
             if (ReferenceEquals(left, null) ^ ReferenceEquals(right, null))
             {
@@ -14,7 +14,7 @@
             return ReferenceEquals(left, null) || left.Equals(right);
         }
 
-        protected static bool NotEqualOperator(ValueObject left, ValueObject right)
+        protected static bool NotEqualOperator(ValueObjectClass left, ValueObjectClass right)
         {
             return !(EqualOperator(left, right));
         }
@@ -28,21 +28,19 @@
                 return false;
             }
 
-            var other = (ValueObject)obj;
+            var other = (ValueObjectClass)obj;
 
             return this.GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());
         }
 
         public override int GetHashCode()
-        {
-            return GetEqualityComponents()
+            => GetEqualityComponents()
                 .Select(x => x != null ? x.GetHashCode() : 0)
                 .Aggregate((x, y) => x ^ y);
-        }
 
-        public ValueObject GetCopy()
+        public ValueObjectClass GetCopy()
         {
-            return this.MemberwiseClone() as ValueObject;
+            return this.MemberwiseClone() as ValueObjectClass;
         }
     }
 }

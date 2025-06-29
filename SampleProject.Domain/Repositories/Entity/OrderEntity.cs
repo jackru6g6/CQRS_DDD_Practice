@@ -14,6 +14,8 @@ namespace SampleProject.Domain.Repositories.Entity
             _version = new Lazy<string?>(() => ModifyTime?.ToString());
         }
 
+        #region 屬性
+
         public Guid Id { get; set; }
 
         public string? No { get; set; }
@@ -23,5 +25,7 @@ namespace SampleProject.Domain.Repositories.Entity
         public DateTime CreateTime { get; set; }
 
         public DateTime? ModifyTime { get; set; }
+
+        #endregion
     }
 }

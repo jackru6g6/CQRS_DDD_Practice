@@ -1,21 +1,14 @@
 ﻿using SampleProject.Domain.Domains.Command.Order;
 using SampleProject.Domain.Domains.Event.Order;
-using SampleProject.Domain.Exceptions;
 using SampleProject.Domain.Repositories.Entity;
 
 namespace SampleProject.Domain.Domains.Aggregate.Order
 {
-    public class Order : AggregateRoot
+    public class OrderAgg(OrderEntity? entity) : AggregateRoot
     {
-        public OrderEntity RootEntity { get; private set; }
+        public OrderEntity Entity { get; private set; } = entity ?? throw new Exception($"{nameof(OrderEntity)} is null.");
 
         public List<OrderItemEntity> Items { get; private set; } = [];
-
-        public Order(OrderEntity? entity, IEnumerable<OrderItemEntity>? items)
-        {
-            RootEntity = entity ?? throw new EntityNullException(nameof(OrderEntity));
-            Items = items?.ToList() ?? [];
-        }
 
         /// <summary>
         /// 建立訂單聚合物件
@@ -25,7 +18,7 @@ namespace SampleProject.Domain.Domains.Aggregate.Order
         /// </remarks>
         /// <param name="amount"></param>
         /// <returns></returns>
-        public static Order Create(OrderCreatedCommand request)
+        public static OrderAgg Create(OrderCreatedCommand request)
         {
             var entity = new OrderEntity
             {
@@ -34,18 +27,22 @@ namespace SampleProject.Domain.Domains.Aggregate.Order
                 CreateTime = DateTime.Now,
             };
 
-            var result = new Order(entity, null);
-            result.AddDomainEvent(new OrderCreatedEvent { Id = entity.Id, });
+            var result = new OrderAgg(entity);
+            result.AddDomainEvent(new OrderCreatedEvent
+            {
+                Id = entity.Id,
+            });
 
             return result;
         }
 
         public void AddItem()
         {
-            var ItmeAdded = new OrderItemEntity();
-            Items.Add(ItmeAdded);
+            var addItme = new OrderItemEntity();
 
-            AddDomainEvent(new OrderItemAddedEvent { Id = RootEntity.Id });
+            Items.Add(addItme);
+
+            AddDomainEvent(new OrderItemAddedEvent { Id = Entity.Id });
         }
     }
 }

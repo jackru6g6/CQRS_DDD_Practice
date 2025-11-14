@@ -46,7 +46,7 @@
      >
      > 注意：
      >
-     > - 假如內部共同使用，則會移至 Apollo.Common 
+     > - 假如內部共同使用，則會移至 Common 
      >
      > 命名規則：無
 
@@ -178,7 +178,7 @@
 3. 靜態類別(static class) 改為一般類別，使用 單例 Singleton ( .net core 內建注入) 實作。
 
    1. 好處：方便撰寫單元測試，靜態類別不好模擬建立 Instance，可以用 mock 模擬，但很麻煩。
-   2. Apollo.InfraLib 部分可繼續使用 static，加解密異動性不高。
+   2. InfraLib 部分可繼續使用 static，加解密異動性不高。
 
 4. 多語系需求
 

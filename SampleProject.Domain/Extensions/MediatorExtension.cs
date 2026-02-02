@@ -50,60 +50,6 @@ namespace SampleProject.Domain.Extensions
             }
         }
 
-        //private static bool InheritsFromEntity(Type type)
-        //{
-        //    Type entityType = typeof(AggregateRoot);
-        //    return entityType.IsAssignableFrom(type);
-        //}
-
-        //public static IEnumerable<AggregateRoot> AAAA(object aggregate)
-        //{
-        //    Type type = aggregate.GetType();
-
-        //    if (InheritsFromEntity(type))
-        //    {
-        //        yield return (AggregateRoot)aggregate;
-        //    }
-
-        //    foreach (PropertyInfo prop in type.GetProperties())
-        //    {
-        //        var propType = prop.PropertyType;
-
-        //        if (propType.IsArray )
-        //        {
-        //            Array arrayValue = (Array)prop.GetValue(aggregate);
-        //            foreach (var item in arrayValue)
-        //            {
-        //                foreach (var a in AAAA(item))
-        //                {
-        //                    yield return a;
-        //                }
-        //            }
-        //        }
-        //        else if (propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof(List<>))
-        //        {
-        //            IList listValue = (IList)prop.GetValue(aggregate);
-        //            foreach (var item in listValue)
-        //            {
-        //                foreach (var a in AAAA(item))
-        //                {
-        //                    yield return a;
-        //                }
-        //            }
-        //        }
-        //        else if (InheritsFromEntity(prop.GetType()))
-        //        {
-        //            object value = prop.GetValue(aggregate);
-
-        //            foreach (var a in AAAA(value))
-        //            {
-        //                yield return a;
-        //            }
-        //        }
-        //    }
-        //}
-
-
         public static IEnumerable<AggregateRoot> FindEntities(object obj)
         {
             Type entityType = typeof(AggregateRoot);
@@ -120,9 +66,10 @@ namespace SampleProject.Domain.Extensions
                 var propValue = prop.GetValue(obj);
 
                 //if (propValue is IEnumerable enumerable && !(propValue is string))
-                if (propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof(List<>))
+                if (propType.IsGenericType &&
+                    propType.GetGenericTypeDefinition() == typeof(List<>))
                 {
-                    IEnumerable enumerable = (IEnumerable)prop.GetValue(obj);
+                    IEnumerable? enumerable = (IEnumerable?)prop.GetValue(obj);
                     if (enumerable is null)
                     {
                         continue;

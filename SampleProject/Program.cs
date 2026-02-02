@@ -3,6 +3,9 @@ using Autofac.Extensions.DependencyInjection;
 using Autofac.Extras.DynamicProxy;
 using Castle.DynamicProxy;
 using MediatR;
+using RedLockNet;
+using RedLockNet.SERedis;
+using RedLockNet.SERedis.Configuration;
 using SampleProject.Domain.Applications;
 using SampleProject.Domain.Applications.Adapter;
 using SampleProject.Domain.Applications.Behavior;
@@ -10,6 +13,7 @@ using SampleProject.Domain.Filters.OptimisticLock;
 using SampleProject.Domain.Interfaces.Application;
 using SampleProject.Domain.Interfaces.Repository;
 using SampleProject.Domain.Repositories;
+using StackExchange.Redis;
 using System.Reflection;
 
 public static class Program
@@ -29,7 +33,25 @@ public static class Program
 
         // DI Container
         builder.Services.AddScoped<IOrderApplication, OrderApplication>();
-        builder.Services.AddSingleton<INotificationPublisher, OptimisticLockExceptionRertyAdapterHandler>();
+        //builder.Services.AddSingleton<INotificationPublisher, OptimisticLockExceptionRertyAdapterHandler>();
+
+        builder.Services.AddSingleton<INotificationPublisher, RetryNotificationPublisher>();
+
+        #region RedLock & Redis Cache 配置
+
+        var redis = ConnectionMultiplexer.Connect("");
+        var db = redis.GetDatabase(0); // default = RedisDbType.Business
+
+        var multiplexers = new List<RedLockMultiplexer>
+        {
+            redis
+        };
+
+        var redlockFactory = RedLockFactory.Create(multiplexers);
+
+        builder.Services.AddSingleton<IDistributedLockFactory>(redlockFactory);
+
+        #endregion
 
         #region 客製化設定
 
@@ -41,6 +63,12 @@ public static class Program
             //cfg.RegisterServicesFromAssemblyContaining(typeof(BaseApplication));
             //Assembly.Load(new AssemblyName("Apollo.MerchantCenter.Domain"));
             cfg.RegisterServicesFromAssembly(_domainAssembly);
+
+            // redlock 分布式鎖(要在最前面，因為是根據注入順序執行Behavior)
+            cfg.AddOpenBehavior(typeof(RedLockPipelineBehavior<,>));
+
+            // retry
+            cfg.AddOpenBehavior(typeof(RetryPipelineBehavior<,>));
 
             // 驗證器
             cfg.AddOpenBehavior(typeof(ValidatorBehavior<,>));

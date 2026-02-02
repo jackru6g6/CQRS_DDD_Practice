@@ -61,6 +61,17 @@ namespace SampleProject.Domain.Applications.Adapter
                             {
                                 // 不是 OptimisticLockException 的例外，直接拋出 (可能是自訂例外或者其他問題，不需要重複執行 event)
                                 throw;
+
+                                // 這是我們想要重試的暫時性例外 (Transient Fault)
+                                //if (attempt < MaxRetryAttempts)
+                                //{
+                                //    System.Console.WriteLine($"[重試機制] 第 {attempt} 次失敗。等待 {Delay.TotalSeconds} 秒後重試...");
+                                //    await Task.Delay(Delay);
+                                //    continue;
+                                //}
+                                //// 達到最大重試次數，拋出原始例外
+                                //System.Console.WriteLine($"[重試機制] 達到最大重試次數 ({MaxRetryAttempts})，終止。");
+                                //throw;
                             }
                         }
                     }

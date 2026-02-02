@@ -20,7 +20,7 @@ namespace SampleProject.Controllers
         }
 
         [HttpGet]
-        public async Task<ApiResult<GetOrderResponse>> Get(GetOrderRequest request)
+        public async Task<ApiResult<GetOrderResponse>> Get([FromQuery] GetOrderRequest request)
         {
             return await _appService.Get(request);
         }

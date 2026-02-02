@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using SampleProject.Domain.Applications.Adapter;
 using SampleProject.Domain.Domains.Command.Order;
 using SampleProject.Domain.Interfaces.Repository;
 
@@ -13,6 +14,7 @@ namespace SampleProject.Domain.Domains.CommandHandler.Order
             _orderRepo = orderRepo;
         }
 
+        [RetryEvent]
         public Task<Guid> Handle(OrderCreatedCommand command, CancellationToken cancellationToken)
         {
             var orderAgg = Aggregate.Order.Order.Create(command);

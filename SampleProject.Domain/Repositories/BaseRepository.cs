@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using SampleProject.Domain.Extensions;
+using SampleProject.Domain.Infrastructures;
 using SampleProject.Domain.Interfaces.Domain;
 
 namespace SampleProject.Domain.Repositories
@@ -8,9 +9,15 @@ namespace SampleProject.Domain.Repositories
     {
         private readonly IMediator _mediator;
 
-        public BaseRepository(IMediator mediator)
+        /// <summary>
+        /// EF Core DbContext
+        /// </summary>
+        protected readonly SampleDbContext DbContext;
+
+        public BaseRepository(IMediator mediator, SampleDbContext dbContext)
         {
             _mediator = mediator;
+            DbContext = dbContext;
         }
 
         /// <summary>

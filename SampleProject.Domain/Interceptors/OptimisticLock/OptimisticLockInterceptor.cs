@@ -5,6 +5,9 @@ using SampleProject.Domain.Interfaces.Repository;
 
 namespace SampleProject.Domain.Filters.OptimisticLock
 {
+    /// <summary>
+    /// 樂觀鎖攔截器，攔截帶有 Select、Update、Delete 特性的 Repository 方法，實現樂觀鎖邏輯
+    /// </summary>
     public class OptimisticLockInterceptor : IInterceptor
     {
         /// <summary>

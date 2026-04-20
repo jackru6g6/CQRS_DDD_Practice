@@ -3,10 +3,13 @@ using Autofac.Extensions.DependencyInjection;
 using Autofac.Extras.DynamicProxy;
 using Castle.DynamicProxy;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using SampleProject.Domain.Applications;
 using SampleProject.Domain.Applications.Adapter;
 using SampleProject.Domain.Applications.Behavior;
 using SampleProject.Domain.Filters.OptimisticLock;
+using SampleProject.Domain.Infrastructures;
+using SampleProject.Domain.Interceptors.DomainEvent;
 using SampleProject.Domain.Interfaces.Application;
 using SampleProject.Domain.Interfaces.Repository;
 using SampleProject.Domain.Repositories;
@@ -28,6 +31,9 @@ public static class Program
         builder.Services.AddSwaggerGen();
 
         // DI Container
+        builder.Services.AddDbContext<SampleDbContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
         builder.Services.AddScoped<IOrderApplication, OrderApplication>();
         builder.Services.AddSingleton<INotificationPublisher, OptimisticLockExceptionRertyAdapterHandler>();
 
@@ -71,7 +77,7 @@ public static class Program
         // 方法二
         #region Autofac
 
-        builder.Services.AddScoped<IOrderAggRepository, OrderAggV2Repository>();
+        builder.Services.AddScoped<IOrderAggRepository, OrderAggEFCoreRepository>();
         // 使用 Autofac 替換內建 DI 容器
         builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
@@ -80,6 +86,7 @@ public static class Program
         {
             // 註冊攔截器
             containerBuilder.RegisterType<OptimisticLockInterceptor>();
+            containerBuilder.RegisterType<DomainEventInterceptor>();
 
             // RegisterAssemblyTypes => 註冊所有集合
             // Where(t => t.Name.EndsWith("Service")) => 找出所有Service結尾的檔案
@@ -88,7 +95,7 @@ public static class Program
                             .Where(t => t.Name.EndsWith("Repository"))
                             .AsImplementedInterfaces() // 將這些類型的服務註冊為它們實現的介面，例如，類型 OrderService : IOrderService 會被註冊為 IOrderService，而不是它本身的具體類型
                             .EnableInterfaceInterceptors() // 啟用對註冊類型的介面攔截功能
-                            .InterceptedBy(typeof(OptimisticLockInterceptor)); // 指定攔截器類型 OptimisticLockInterceptor，當攔截生效時執行該攔截器邏輯
+                            .InterceptedBy(typeof(OptimisticLockInterceptor), typeof(DomainEventInterceptor)); // 指定攔截器類型
 
             //containerBuilder.RegisterType<LoggingInterceptor>();
             //containerBuilder.RegisterType<MyService>()

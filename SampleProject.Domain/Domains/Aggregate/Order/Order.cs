@@ -11,10 +11,15 @@ namespace SampleProject.Domain.Domains.Aggregate.Order
 
         public List<OrderItemEntity> Items { get; private set; } = [];
 
-        public Order(OrderEntity? entity, IEnumerable<OrderItemEntity>? items)
+        ///// <summary>
+        ///// 給 Js
+        ///// </summary>
+        public Order() { }
+
+        public Order(OrderEntity? RootEntity, IEnumerable<OrderItemEntity>? Items)
         {
-            RootEntity = entity ?? throw new EntityNullException(nameof(OrderEntity));
-            Items = items?.ToList() ?? [];
+            this.RootEntity = RootEntity ?? throw new EntityNullException(nameof(Repositories.Entity.OrderEntity));
+            this.Items = Items?.ToList() ?? [];
         }
 
         /// <summary>

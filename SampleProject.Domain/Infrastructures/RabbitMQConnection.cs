@@ -5,14 +5,22 @@ namespace SampleProject.Domain.Infrastructures
 {
     public class RabbitMQConnection : IRabbitMQConnection
     {
-        private readonly ConnectionFactory _factory;
         private readonly IConnection _connection;
         private bool _isDisposed;
 
-        public RabbitMQConnection(ConnectionFactory factory)
+        private RabbitMQConnection(IConnection connection)
         {
-            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-            _connection = factory.CreateConnectionAsync().Result;
+            _connection = connection;
+        }
+
+        /// <summary>
+        /// 建立 RabbitMQConnection 的非同步工廠方法，避免建構函式中使用 .Result 造成 Deadlock。
+        /// </summary>
+        public static async Task<RabbitMQConnection> CreateAsync(ConnectionFactory factory)
+        {
+            ArgumentNullException.ThrowIfNull(factory);
+            var connection = await factory.CreateConnectionAsync();
+            return new RabbitMQConnection(connection);
         }
 
         public async Task<IChannel> CreateChannel()
@@ -34,29 +42,10 @@ namespace SampleProject.Domain.Infrastructures
                 return;
             }
 
-            /*
             if (disposing)
             {
-                try
-                {
-                    _connection?.Close();
-                    _connection?.Dispose();
-                }
-                catch (IOException ex)
-                {
-                    // 可以記錄日誌或處理連接關閉時的異常
-                    Console.WriteLine($"關閉 RabbitMQ 連接時發生錯誤: {ex.Message}");
-                }
+                _connection?.Dispose();
             }
-            */
-
-            if (disposing)
-            {
-                // Free any other managed objects here.
-            }
-
-            // Free any unmanaged objects here.
-            _connection?.Dispose();
 
             _isDisposed = true;
         }

@@ -9,15 +9,25 @@ using System.Text.Json;
 
 namespace SampleProject.Domain.Domains.Service
 {
-    public class RabbitMQService : IRabbitMQService
+    public class RabbitMQService : IRabbitMQService, IAsyncDisposable
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly IChannel _channel;
+        private readonly IRabbitMQConnection _connection;
+        private IChannel? _channel;
 
         public RabbitMQService(IServiceProvider serviceProvider, IRabbitMQConnection connection)
         {
             _serviceProvider = serviceProvider;
-            _channel = connection.CreateChannel().Result;
+            _connection = connection;
+        }
+
+        /// <summary>
+        /// 取得或建立 Channel（延遲初始化，避免建構函式 .Result 阻塞）
+        /// </summary>
+        private async Task<IChannel> GetChannelAsync()
+        {
+            _channel ??= await _connection.CreateChannel();
+            return _channel;
         }
 
         /// <summary>
@@ -31,11 +41,13 @@ namespace SampleProject.Domain.Domains.Service
         {
             queueName ??= typeof(TEvent).Name;
 
-            await _channel.QueueDeclareAsync(queue: queueName,
-                                             durable: false,
-                                             exclusive: false,
-                                             autoDelete: false,
-                                             arguments: null);
+            var channel = await GetChannelAsync();
+
+            await channel.QueueDeclareAsync(queue: queueName,
+                                            durable: true,
+                                            exclusive: false,
+                                            autoDelete: false,
+                                            arguments: null);
 
             var message = JsonSerializer.Serialize(integrationEvent);
             var body = Encoding.UTF8.GetBytes(message);
@@ -45,11 +57,11 @@ namespace SampleProject.Domain.Domains.Service
                 Persistent = true // 設置消息持久化
             };
 
-            await _channel.BasicPublishAsync(exchange: "",
-                                             routingKey: queueName,
-                                             basicProperties: properties,
-                                             body: body,
-                                             mandatory: false);
+            await channel.BasicPublishAsync(exchange: "",
+                                            routingKey: queueName,
+                                            basicProperties: properties,
+                                            body: body,
+                                            mandatory: false);
         }
 
         /// <summary>
@@ -58,18 +70,21 @@ namespace SampleProject.Domain.Domains.Service
         /// <typeparam name="TEvent"></typeparam>
         /// <param name="eventHandlerDelegate"></param>
         /// <param name="queueName"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task StartEventListeningAsync<TEvent>(Func<IServiceProvider, INotificationHandler<TEvent>> eventHandlerDelegate, string? queueName = null, CancellationToken cancellationToken = default) where TEvent : INotification
         {
             queueName ??= typeof(TEvent).Name;
 
-            await _channel.QueueDeclareAsync(queue: queueName,
-                                             durable: false,
-                                             exclusive: false,
-                                             autoDelete: false,
-                                             arguments: null);
+            var channel = await GetChannelAsync();
 
-            var consumer = new AsyncEventingBasicConsumer(_channel);
+            await channel.QueueDeclareAsync(queue: queueName,
+                                            durable: true,
+                                            exclusive: false,
+                                            autoDelete: false,
+                                            arguments: null);
+
+            var consumer = new AsyncEventingBasicConsumer(channel);
 
             consumer.ReceivedAsync += async (model, ea) =>
             {
@@ -82,24 +97,36 @@ namespace SampleProject.Domain.Domains.Service
 
                     if (integrationEvent is not null)
                     {
-                        using (var scope = _serviceProvider.CreateScope())
-                        {
-                            var eventHandler = eventHandlerDelegate(scope.ServiceProvider);
-                            await eventHandler.Handle(integrationEvent, cancellationToken);
-                        }
+                        using var scope = _serviceProvider.CreateScope();
+                        var eventHandler = eventHandlerDelegate(scope.ServiceProvider);
+                        await eventHandler.Handle(integrationEvent, cancellationToken);
                     }
 
-                    // 手動確認消息已被處理，配合 BasicConsumeAsync(autoAck:false)
-                    //await _channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false, cancellationToken: cancellationToken);
+                    // 手動確認消息已被處理
+                    await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false, cancellationToken: cancellationToken);
                 }
                 catch (Exception)
                 {
                     // TODO：log 紀錄
+                    // 處理失敗時拒絕消息並重新入隊
+                    await channel.BasicNackAsync(deliveryTag: ea.DeliveryTag, multiple: false, requeue: true, cancellationToken: cancellationToken);
                 }
             };
 
-            // autoAck true: 代表 RabbitMQ 會自動確認消息已被處理
-            await _channel.BasicConsumeAsync(queue: queueName, autoAck: true, consumer: consumer);
+            // autoAck false: 搭配 BasicAckAsync 手動確認，確保消息可靠性
+            await channel.BasicConsumeAsync(queue: queueName, autoAck: false, consumer: consumer);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (_channel is not null)
+            {
+                await _channel.CloseAsync();
+                await _channel.DisposeAsync();
+                _channel = null;
+            }
+
+            GC.SuppressFinalize(this);
         }
 
         /*

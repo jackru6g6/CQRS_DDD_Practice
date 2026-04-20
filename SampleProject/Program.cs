@@ -27,7 +27,7 @@ public static class Program
 {
     private static readonly Assembly _domainAssembly = Assembly.Load(new AssemblyName("SampleProject.Domain"));
 
-    private static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -51,7 +51,7 @@ public static class Program
         builder.Services.Configure<RabbitMQOptions>(builder.Configuration.GetSection("RabbitMQ"));
 
         // 註冊 RabbitMQ 連線工廠
-        builder.Services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>(sp =>
+        builder.Services.AddSingleton<IRabbitMQConnection>(sp =>
         {
             var options = sp.GetRequiredService<IOptions<RabbitMQOptions>>().Value;
             var factory = new ConnectionFactory()
@@ -62,7 +62,7 @@ public static class Program
                 Password = options.Password,
             };
 
-            return new RabbitMQConnection(factory);
+            return RabbitMQConnection.CreateAsync(factory).GetAwaiter().GetResult();
         });
 
         builder.Services.AddSingleton<IRabbitMQService, RabbitMQService>();
@@ -156,7 +156,7 @@ public static class Program
         }
 
         // 加入事件聆聽 MQ
-        app.UseTodoApplication();
+        await app.UseTodoApplicationAsync();
 
         app.UseHttpsRedirection();
 
@@ -164,7 +164,7 @@ public static class Program
 
         app.MapControllers();
 
-        app.Run();
+        await app.RunAsync();
     }
 
     public static IServiceCollection AddProxiedScoped<TService, TImplementation>(this IServiceCollection services)
@@ -207,18 +207,16 @@ public static class Program
     /// </summary>
     /// <param name="app"></param>
     /// <returns></returns>
-    public static IApplicationBuilder UseTodoApplication(this IApplicationBuilder app)
+    public static async Task<IApplicationBuilder> UseTodoApplicationAsync(this IApplicationBuilder app)
     {
         // 使用 IServiceScope 來取得服務的實例
-        using (var scope = app.ApplicationServices.CreateScope())
-        {
-            // 解析取得 RabbitMQService
-            //var rabbitMQService = scope.ServiceProvider.GetRequiredService<RabbitMQService>();
-            var rabbitMQService = scope.ServiceProvider.GetRequiredService<IRabbitMQService>();
+        await using var scope = app.ApplicationServices.CreateAsyncScope();
 
-            // 傳入取得 EventHandlers 的 Delegate
-            rabbitMQService.StartEventListeningAsync(sp => sp.GetRequiredService<INotificationHandler<OrderCreatedV2Event>>());
-        }
+        // 解析取得 RabbitMQService
+        var rabbitMQService = scope.ServiceProvider.GetRequiredService<IRabbitMQService>();
+
+        // 傳入取得 EventHandlers 的 Delegate
+        await rabbitMQService.StartEventListeningAsync(sp => sp.GetRequiredService<INotificationHandler<OrderCreatedV2Event>>());
 
         return app;
     }

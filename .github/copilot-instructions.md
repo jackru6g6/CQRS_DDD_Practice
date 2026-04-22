@@ -44,6 +44,12 @@ SampleProject.NUnitTest → SampleProject.Domain
 6. **Domain Service 職責**：與一個或多個 Repository 溝通，將 Entity 物件轉型為 Domain Model。
 7. **Repository Entity 無邏輯**：Entity 只作為資料庫 Raw Data，不得包含任何業務邏輯。
 8. **多語系**：內部訊息可用中文；若為對外 External Gateway 的 ApiResponse，需提供對應英文訊息。
+9. **Rich Domain Model**：本專案採用 DDD 開發，除 DTO（`XXXRequㄖest`、`XXXResponse`、`XXXEntity`、`XXXApiData`、ViewModel）之外，所有 Domain Model 一律為 **Rich Domain Model**，規則如下：
+   - Domain Model 的欄位（field）必須為 `private`，不得對外直接賦值。
+   - 所有狀態變更須透過明確命名的方法（如 `PlaceOrder()`、`Cancel()`）封裝業務邏輯，禁止在 Domain Model 外部直接修改狀態。
+   - 建構子（constructor）應負責必要欄位的初始化與不變式（invariant）驗證，確保 Domain Model 建立後即處於合法狀態。
+   - 集合型別（如 `List<T>`）對外只開放 `IReadOnlyCollection<T>`，避免外部直接操作集合。
+   - 避免使用貧血模型（Anemic Domain Model），業務規則不得外漏至 Application 或 Service 層。
 
 ## 單元測試規則
 

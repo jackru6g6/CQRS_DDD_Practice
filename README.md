@@ -213,5 +213,4 @@ ORDER BY [Order].[OrderTime] DESC
 # TODO List
 - github ci/cd
 - 依照 space 產出 code
-- 單元測試
 - commit 自動 code review，確保程式碼品質，訂好 design pattern 與規範

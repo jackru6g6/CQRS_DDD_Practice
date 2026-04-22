@@ -1,12 +1,12 @@
 using MediatR;
 using NSubstitute;
-using NUnit.Framework;
 using SampleProject.API.Model.Order.Request;
 using SampleProject.Domain.Applications;
 using SampleProject.Domain.Domains.Aggregate.Order;
 using SampleProject.Domain.Exceptions;
 using SampleProject.Domain.Interfaces.Repository;
 using SampleProject.Domain.Repositories.Entity;
+using SampleProject.Domain.Interfaces.Domain.Service;
 
 namespace SampleProject.NUnitTest.Applications
 {
@@ -15,6 +15,7 @@ namespace SampleProject.NUnitTest.Applications
     {
         private IMediator _mediator;
         private IOrderAggRepository _repo;
+        private IRabbitMQService _rabbitMQService;
         private OrderApplication _sut;
 
         [SetUp]
@@ -22,7 +23,8 @@ namespace SampleProject.NUnitTest.Applications
         {
             _mediator = Substitute.For<IMediator>();
             _repo = Substitute.For<IOrderAggRepository>();
-            _sut = new OrderApplication(_mediator, _repo);
+            _rabbitMQService = Substitute.For<IRabbitMQService>();
+            _sut = new OrderApplication(_mediator, _repo, _rabbitMQService);
         }
 
         #region Get

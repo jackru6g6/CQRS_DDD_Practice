@@ -1,0 +1,49 @@
+version: '3.9'
+
+services:
+  web:
+    image: mcr.microsoft.com/dotnet/aspnet:9.0
+    container_name: sample_web
+    ports:
+      - "5000:80"
+    volumes:
+      - ./SampleProject/bin/Debug/net9.0:/app
+    working_dir: /app
+    command: ["dotnet", "SampleProject.API.dll"]
+    depends_on:
+      - mssql
+      - mq
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=mssql;Database=test;User Id=mssqlAccount;Password=testPassword123;
+      - RabbitMQ__HostName=mq
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: sample_mssql
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "YourStrongPassword123"
+    volumes:
+      - mssql_data:/var/opt/mssql
+
+  mq:
+    image: rabbitmq:3-management
+    container_name: sample_mq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - mq_data:/var/lib/rabbitmq
+
+volumes:
+  mssql_data:
+  mq_data:

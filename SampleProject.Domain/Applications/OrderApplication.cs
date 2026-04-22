@@ -23,7 +23,6 @@ namespace SampleProject.Domain.Applications
         {
             _mediator = mediator;
             _repo = repo;
-
             _rabbitMQService = rabbitMQService;
         }
 

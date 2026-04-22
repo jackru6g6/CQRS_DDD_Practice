@@ -156,7 +156,7 @@ public static class Program
         }
 
         // 加入事件聆聽 MQ
-        await app.UseTodoApplicationAsync();
+        //await app.UseTodoApplicationAsync();
 
         app.UseHttpsRedirection();
 

@@ -1,6 +1,6 @@
 ---
 description: "Use when creating DDD domain services, including Aggregate, Command, CommandHandler, CommandValidation, Event, EventHandler, ValueObject in SampleProject.Domain. 適用於建立 DDD 領域服務，包含聚合根、命令、命令處理器、命令驗證、領域事件、事件處理器、值物件。"
-applyTo:"SampleProject.Domain/Domains/**"
+applyTo: "SampleProject.Domain/Domains/**/*.cs"
 ---
 
 # DDD Domain 服務建立規範

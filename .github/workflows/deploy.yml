@@ -2,9 +2,9 @@ name: CI/CD 部署流水線
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "master" ]
 
 env:
   REGISTRY: ghcr.io
@@ -57,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-test
     # 僅在推送至 main 分支時才執行（PR 不推送 Image）
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
 
     permissions:
       contents: read

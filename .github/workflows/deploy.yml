@@ -5,6 +5,8 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+  # 手動觸發（可選）
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
